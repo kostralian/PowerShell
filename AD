@@ -1,4 +1,3 @@
-#complete by giving options to remove one by one or all
 $olderThanXdays = (Get-Date).AddDays(-13)
 $moreThanXweeks = (Get-Date).AddMonths(3)
 $selected = Get-ADGroupMember -identity "SecuirtyEndpointDepartingUsers" -Recursive |
@@ -11,10 +10,37 @@ Where-Object {($_.AccountExpirationDate -lt $olderThanXdays) -or
  ($_.AccountExpirationDate -ne $null)} |
 Sort-Object -Property AccountExpirationDate -Descending 
 
+Function Display-ADGroupMembers {
 $selected | Format-Table DisplayName,SamAccountName,AccountExpirationDate,Enabled -AutoSize -Wrap
+}
 
 
-$selected | ForEach-Object {Remove-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -members $_ -confirm:$false}
 
-#Format-Table DisplayName,SamAccountName,AccountExpirationDate,Enabled -AutoSize -Wrap |
-#select DisplayName,SamAccountName,AccountExpirationDate,Enabled
+Function Remove-SelectedMembers {
+Do {
+
+    $confirmation = Read-Host "Do you want to remove all the displayed accounts from this group? [y/n]"
+
+    if ($confirmation -eq 'y') {
+
+        $selected | ForEach-Object {Remove-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -members $_ -confirm:$false}
+
+    } 
+
+    elseif ($confirmation -eq 'n') {
+
+        Write-Host "Canceled"
+
+        Exit
+
+    } 
+   
+    else {
+        Write-Host "Please enter only y or n"
+    }
+  } Until ($confirmation)
+
+}
+
+Display-ADGroupMembers
+Remove-SelectedMembers
