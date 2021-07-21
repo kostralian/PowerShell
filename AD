@@ -24,12 +24,12 @@ Do {
     if ($confirmation -eq 'y') {
 
         $selected | ForEach-Object {Remove-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -members $_ -confirm:$false}
-
+        Write-Host "The displayed accounts have been removed from the group"
     } 
 
     elseif ($confirmation -eq 'n') {
 
-        Write-Host "Canceled"
+        Write-Host "Cancelled"
 
         Exit
 
@@ -38,7 +38,7 @@ Do {
     else {
         Write-Host "Please enter only y or n"
     }
-  } Until ($confirmation)
+  } Until ($confirmation -eq 'y' -or $confirmation -eq 'n')
 
 }
 
