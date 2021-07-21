@@ -10,10 +10,10 @@ Where-Object {($_.AccountExpirationDate -lt $olderThanXdays) -or
  ($_.AccountExpirationDate -ne $null)} |
 Sort-Object -Property AccountExpirationDate -Descending 
 
+
 Function Display-ADGroupMembers {
 $selected | Format-Table DisplayName,SamAccountName,AccountExpirationDate,Enabled -AutoSize -Wrap
 }
-
 
 
 Function Remove-SelectedMembers {
@@ -24,7 +24,9 @@ Do {
     if ($confirmation -eq 'y') {
 
         $selected | ForEach-Object {Remove-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -members $_ -confirm:$false}
+        Write-Host ""
         Write-Host "The displayed accounts have been removed from the group"
+        Write-Host ""
     } 
 
     elseif ($confirmation -eq 'n') {
@@ -42,5 +44,35 @@ Do {
 
 }
 
+
+Function Add-EmailToADGroup {
+Do {
+    $verify = Read-Host "Do you want to add the userlist to the group? [y/n]"
+
+    if ($verify -eq 'y') {
+
+        ForEach ($item in (Import-CSV -Path “C:\Temp\users.csv”)) {
+            $email = $item.'Email Address' #the header
+            Get-ADUser -Filter { mail -eq $Email } | 
+            % { Add-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -Members $_ 
+            Write-Host ""
+            Write-Host "$email is added"
+              }
+        } 
+    }
+    elseif ($verify -eq 'n') {
+
+        Write-Host "Cancelled"
+
+        Exit
+     }
+    else {
+        Write-Host "Please enter only y or n"
+    }
+  } Until ($verify -eq 'y' -or $verify -eq 'n')
+}
+
+
 Display-ADGroupMembers
 Remove-SelectedMembers
+Add-EmailToADGroup
