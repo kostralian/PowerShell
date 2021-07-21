@@ -1,8 +1,7 @@
-
-#complete by adding remove-adgroupmember
+#complete by giving options to remove one by one or all
 $olderThanXdays = (Get-Date).AddDays(-13)
 $moreThanXweeks = (Get-Date).AddMonths(3)
-Get-ADGroupMember -identity "SecuirtyEndpointDepartingUsers" -Recursive |
+$selected = Get-ADGroupMember -identity "SecuirtyEndpointDepartingUsers" -Recursive |
 Get-ADUser -Property DisplayName,SamAccountName,AccountExpirationDate,Enabled |
 Where-Object {($_.AccountExpirationDate -lt $olderThanXdays) -or 
  ($_.AccountExpirationDate -gt $morethanxweeks) -and
@@ -10,6 +9,12 @@ Where-Object {($_.AccountExpirationDate -lt $olderThanXdays) -or
  ($_.SamAccountName -notlike "*-mdev*") -and
  ($_.SamAccountName -notlike "*-test*") -and 
  ($_.AccountExpirationDate -ne $null)} |
-Sort-Object -Property AccountExpirationDate -Descending |
+Sort-Object -Property AccountExpirationDate -Descending 
+
+$selected | Format-Table DisplayName,SamAccountName,AccountExpirationDate,Enabled -AutoSize -Wrap
+
+
+$selected | ForEach-Object {Remove-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -members $_ -confirm:$false}
+
 #Format-Table DisplayName,SamAccountName,AccountExpirationDate,Enabled -AutoSize -Wrap |
-ForEach-Object {Remove-ADGroupMember -Identity "SecuirtyEndpointDepartingUsers" -members $_ -confirm:$false}
+#select DisplayName,SamAccountName,AccountExpirationDate,Enabled
